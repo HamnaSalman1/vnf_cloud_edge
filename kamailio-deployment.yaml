@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kamailio-sip-proxy
+  namespace: vnf-sip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kamailio-sip-proxy
+  template:
+    metadata:
+      labels:
+        app: kamailio-sip-proxy
+    spec:
+      containers:
+      - name: kamailio
+        image: ghcr.io/kamailio/kamailio-ci:latest
+        imagePullPolicy: Never
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
+        ports:
+        - containerPort: 5060
+          protocol: UDP
+          name: sip-udp
+        - containerPort: 5060
+          protocol: TCP
+          name: sip-tcp
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kamailio-sip-proxy
+  namespace: vnf-sip
+spec:
+  selector:
+    app: kamailio-sip-proxy
+  ports:
+  - name: sip-udp
+    port: 5060
+    protocol: UDP
+  - name: sip-tcp
+    port: 5060
+    protocol: TCP
